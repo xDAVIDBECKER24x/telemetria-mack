@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -59,16 +61,28 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final stopwatch = Stopwatch();
+  Position? position;
+  double? speed;
+  int laps = 0;
+  late Timer _timer;
 
-  Position? _position;
+  void _startCounter() {
+    stopwatch.start();
+    _timer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+      _getCurrentPosition();
+    });
+  }
 
   void _getCurrentPosition() async {
-    Position _new_position =  await Geolocator.getCurrentPosition(
+    Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    setState(()  {
-      _position = _new_position;
+    setState(() {
+      position = newPosition;
+      speed = newPosition.speed;
+      stopwatch;
     });
-    print(_position);
+    print(position);
   }
 
   @override
@@ -82,14 +96,42 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              _position.toString(),
+              'Tempo',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Text(
+              stopwatch.elapsed.toString(),
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Text(
+              "Voltas",
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Text(
+              laps.toString(),
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Text(
+              "Velocidade",
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Text(
+              speed.toString(),
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Text(
+              "Posição",
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Text(
+              position.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _getCurrentPosition,
+        onPressed: _startCounter,
         tooltip: 'Location',
         child: const Icon(Icons.map),
       ), // This trailing comma makes auto-formatting nicer for build methods.
