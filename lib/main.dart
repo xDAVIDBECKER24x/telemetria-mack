@@ -74,6 +74,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _stopCounter() {
+    _timer.cancel();
+    setState(() {
+      stopwatch.stop();
+    });
+  }
+
+  void _resetCounter() {
+    _timer.cancel();
+    setState(() {
+      stopwatch.reset();
+    });
+  }
+
   void _getCurrentPosition() async {
     Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
@@ -127,14 +141,30 @@ class _MyHomePageState extends State<MyHomePage> {
               position.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  margin: EdgeInsets.all(12),
+                  child: ElevatedButton(
+                      onPressed: _resetCounter, child: Text('Reset')),
+                ),
+
+                Container(
+                  margin: EdgeInsets.all(12),
+                  child: ElevatedButton(
+                      onPressed: _stopCounter, child: Text('Stop')),
+                ),
+                Container(
+                  margin: EdgeInsets.all(12),
+                  child: ElevatedButton(
+                      onPressed: _startCounter, child: Text('Start')),
+                ),
+              ],
+            )
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _startCounter,
-        tooltip: 'Location',
-        child: const Icon(Icons.map),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
