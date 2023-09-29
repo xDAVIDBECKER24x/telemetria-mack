@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:telemetria_mack/velocimeter_widget.dart';
+import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,6 +49,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
       ),
       home: const MyHomePage(title: 'Telemetria Mack'),
+      // home: VelocimeterWidget(),
     );
   }
 }
@@ -124,14 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
             //   laps.toString(),
             //   style: Theme.of(context).textTheme.headlineMedium,
             // ),
-            Text(
-              "Velocidade",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            Text(
-              speed.toString(),
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+
             Text(
               "Posição",
               style: Theme.of(context).textTheme.headlineSmall,
@@ -140,7 +136,43 @@ class _MyHomePageState extends State<MyHomePage> {
               position.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            Text(
+              "Velocidade",
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Container(
+
+              child:  RadialGauge(
+                track: RadialTrack(
+
+                    color: Colors.grey,
+                    start: 0,
+                    end: 80,
+                    trackStyle: TrackStyle(
+                        showLastLabel: false,
+                        secondaryRulerColor: Colors.grey,
+                        secondaryRulerPerInterval: 2)),
+                needlePointer: [
+                  NeedlePointer(
+
+                    value: speed!,
+                    color: Colors.red,
+                    tailColor: Colors.black,
+                    tailRadius: 0,
+                    needleStyle: NeedleStyle.gaugeNeedle,
+                    needleWidth: 8,
+                  ),
+                ],
+              ),
+            ),
+
+            // Text(
+            //   speed.toString(),
+            //   style: Theme.of(context).textTheme.headlineMedium,
+            // ),
+
             Row(
+
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
@@ -148,7 +180,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: ElevatedButton(
                       onPressed: _resetCounter, child: Text('Reset')),
                 ),
-
                 Container(
                   margin: EdgeInsets.all(12),
                   child: ElevatedButton(
