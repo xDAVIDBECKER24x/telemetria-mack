@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -68,16 +69,20 @@ class _MyHomePageState extends State<MyHomePage> {
   double? speed;
   int laps = 0;
   late Timer _timer;
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
       _getCurrentPosition();
     });
   }
 
   void _startCounter() {
+    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+      _getCurrentPosition();
+    });
     stopwatch.start();
   }
 
@@ -105,6 +110,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  String _printDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String minutes = twoDigits(duration.inMinutes.remainder(60));
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+    String miliseconds = twoDigits(duration.inMilliseconds.remainder(1000));
+    return "${twoDigits(duration.inHours)}:$minutes:$seconds:$miliseconds";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             Text(
-              stopwatch.elapsed.toString(),
+              _printDuration(stopwatch.elapsed),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             // Text(
@@ -144,6 +157,10 @@ class _MyHomePageState extends State<MyHomePage> {
               "Velocidade",
               style: Theme.of(context).textTheme.headlineSmall,
             ),
+            Text(
+              speed.toString(),
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             Container(
               child: RadialGauge(
                 track: RadialTrack(
@@ -166,12 +183,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
-
-            // Text(
-            //   speed.toString(),
-            //   style: Theme.of(context).textTheme.headlineMedium,
-            // ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
