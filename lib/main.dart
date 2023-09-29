@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:telemetria_mack/velocimeter_widget.dart';
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 
 void main() {
@@ -70,11 +69,16 @@ class _MyHomePageState extends State<MyHomePage> {
   int laps = 0;
   late Timer _timer;
 
-  void _startCounter() {
-    stopwatch.start();
+  @override
+  void initState() {
+    super.initState();
     _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       _getCurrentPosition();
     });
+  }
+
+  void _startCounter() {
+    stopwatch.start();
   }
 
   void _stopCounter() {
@@ -133,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             Text(
-              position.toString(),
+              position != null ? position.toString() : "Calculando",
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             Text(
@@ -141,10 +145,8 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             Container(
-
-              child:  RadialGauge(
+              child: RadialGauge(
                 track: RadialTrack(
-
                     color: Colors.grey,
                     start: 0,
                     end: 80,
@@ -154,8 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         secondaryRulerPerInterval: 2)),
                 needlePointer: [
                   NeedlePointer(
-
-                    value: speed!,
+                    value: speed != null ? speed! : 0,
                     color: Colors.red,
                     tailColor: Colors.black,
                     tailRadius: 0,
@@ -172,23 +173,29 @@ class _MyHomePageState extends State<MyHomePage> {
             // ),
 
             Row(
-
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
                   margin: EdgeInsets.all(12),
                   child: ElevatedButton(
-                      onPressed: _resetCounter, child: Text('Reset')),
+                      onPressed: _resetCounter,
+                      child: Text('Reset', style: TextStyle(fontSize: 24))),
                 ),
                 Container(
                   margin: EdgeInsets.all(12),
                   child: ElevatedButton(
-                      onPressed: _stopCounter, child: Text('Stop')),
+                      onPressed: _stopCounter,
+                      child: Text('Stop', style: TextStyle(fontSize: 24))),
                 ),
                 Container(
                   margin: EdgeInsets.all(12),
                   child: ElevatedButton(
-                      onPressed: _startCounter, child: Text('Start')),
+                    onPressed: _startCounter,
+                    child: Text(
+                      'Start',
+                      style: TextStyle(fontSize: 24),
+                    ),
+                  ),
                 ),
               ],
             )
