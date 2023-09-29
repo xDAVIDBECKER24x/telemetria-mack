@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _startCounter() {
     stopwatch.start();
-    _timer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       _getCurrentPosition();
     });
   }
@@ -93,10 +93,9 @@ class _MyHomePageState extends State<MyHomePage> {
         desiredAccuracy: LocationAccuracy.high);
     setState(() {
       position = newPosition;
-      speed = newPosition.speed;
+      speed = newPosition.speed * 3.6;
       stopwatch;
     });
-    print(position);
   }
 
   @override
@@ -117,14 +116,14 @@ class _MyHomePageState extends State<MyHomePage> {
               stopwatch.elapsed.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            Text(
-              "Voltas",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            Text(
-              laps.toString(),
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            // Text(
+            //   "Voltas",
+            //   style: Theme.of(context).textTheme.headlineSmall,
+            // ),
+            // Text(
+            //   laps.toString(),
+            //   style: Theme.of(context).textTheme.headlineMedium,
+            // ),
             Text(
               "Velocidade",
               style: Theme.of(context).textTheme.headlineSmall,
