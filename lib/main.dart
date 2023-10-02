@@ -148,6 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
     speed = speed.toStringAsFixed(1);
     return speed;
   }
+
   String _formatCordenate(cordenate) {
     cordenate = cordenate.toStringAsFixed(5);
     return cordenate;
@@ -191,10 +192,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
-                position != null ? "Latitude: " + _formatCordenate(position!.latitude) : "Calculando",
+                position != null
+                    ? "Latitude: " + _formatCordenate(position!.latitude)
+                    : "Calculando",
                 style: Theme.of(context).textTheme.headlineMedium,
-              ),Text(
-                position != null ? "Longitude: " + _formatCordenate(position!.longitude) : "Calculando",
+              ),
+              Text(
+                position != null
+                    ? "Longitude: " + _formatCordenate(position!.longitude)
+                    : "Calculando",
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               Text(
