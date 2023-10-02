@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 import 'package:intl/intl.dart';
+import 'package:telemetria_mack/history.dart';
 
 void main() {
   runApp(const MyApp());
@@ -72,18 +71,19 @@ class _MyHomePageState extends State<MyHomePage> {
   late Timer _timer;
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   List<Position> positionsRace = [];
-  List<String> timesRace = [];
+  List<double> speedRace = [];
+  List<String> timeRace = [];
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 400), (timer) {
       _getCurrentPosition();
     });
   }
 
   void _startCounter() {
-    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 400), (timer) {
       _getCurrentPosition();
     });
     stopwatch.start();
@@ -101,27 +101,32 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       stopwatch.reset();
     });
+    print("Register Race Length :" + positionsRace.length.toString());
     print(positionsRace);
-    print(timesRace);
+    print(speedRace);
+    print(timeRace);
     positionsRace.clear();
-    timesRace.clear();
+    speedRace.clear();
+    timeRace.clear();
   }
 
   void _getCurrentPosition() async {
     Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
-    positionsRace.add(newPosition);
-    timesRace.add(_printDuration(stopwatch.elapsed));
+    speed = newPosition.speed * 3.6;
 
+    positionsRace.add(newPosition);
+    speedRace.add(speed!);
+    timeRace.add(_formatDuration(stopwatch.elapsed));
     setState(() {
       position = newPosition;
-      speed = newPosition.speed * 3.6;
+      speed;
       stopwatch;
     });
   }
 
-  String _printDuration(Duration duration) {
+  String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     String minutes = twoDigits(duration.inMinutes.remainder(60));
     String seconds = twoDigits(duration.inSeconds.remainder(60));
@@ -129,17 +134,33 @@ class _MyHomePageState extends State<MyHomePage> {
     return "${twoDigits(duration.inHours)}:$minutes:$seconds:$miliseconds";
   }
 
-  String _printSpeed(speed) {
+  String _formatSpeed(speed) {
     speed = speed.toStringAsFixed(1);
     return speed.toString();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => History()),
+                  );
+                },
+                child: Icon(
+                  Icons.history,
+                  size: 26.0,
+                ),
+              )
+          ),
+        ]
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -151,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
-                _printDuration(stopwatch.elapsed),
+                _formatDuration(stopwatch.elapsed),
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               //-23,5516 -> 4 casas decimais / 1.10^-4 casa =  10 metros
@@ -164,11 +185,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               Text(
-                "Velocidade (km/s)",
+                "Velocidade (km/h)",
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
-                position != null ? _printSpeed(speed) : "Calculando",
+                position != null ? _formatSpeed(speed) : "Calculando",
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               Container(
