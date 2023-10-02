@@ -77,9 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 400), (timer) {
-      _getCurrentPosition();
-    });
+    _startCurrentPosition();
   }
 
   void _startCounter() {
@@ -110,17 +108,29 @@ class _MyHomePageState extends State<MyHomePage> {
     timeRace.clear();
   }
 
+  void _startCurrentPosition() async {
+    Position newPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      position = newPosition;
+      speed = 0;
+    });
+  }
+
   void _getCurrentPosition() async {
     Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
     speed = newPosition.speed * 3.6;
+    position = newPosition;
 
-    positionsRace.add(newPosition);
+    positionsRace.add(position!);
     speedRace.add(speed!);
-    timeRace.add(_formatDuration(stopwatch.elapsed));
+    timeRace.add(stopwatch.elapsed.toString());
+
     setState(() {
-      position = newPosition;
+      position;
       speed;
       stopwatch;
     });
@@ -136,32 +146,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String _formatSpeed(speed) {
     speed = speed.toStringAsFixed(1);
-    return speed.toString();
+    return speed;
+  }
+  String _formatCordenate(cordenate) {
+    cordenate = cordenate.toStringAsFixed(5);
+    return cordenate;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => History()),
-                  );
-                },
-                child: Icon(
-                  Icons.history,
-                  size: 26.0,
-                ),
-              )
-          ),
-        ]
-      ),
+      appBar: AppBar(title: Text(widget.title), actions: [
+        Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => History()),
+                );
+              },
+              child: Icon(
+                Icons.history,
+                size: 26.0,
+              ),
+            )),
+      ]),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -181,7 +191,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
-                position != null ? position.toString() : "Calculando",
+                position != null ? "Latitude: " + _formatCordenate(position!.latitude) : "Calculando",
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),Text(
+                position != null ? "Longitude: " + _formatCordenate(position!.longitude) : "Calculando",
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               Text(
