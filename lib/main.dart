@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -70,17 +71,19 @@ class _MyHomePageState extends State<MyHomePage> {
   int laps = 0;
   late Timer _timer;
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+  List<Position> positionsRace = [];
+  List<String> timesRace = [];
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
       _getCurrentPosition();
     });
   }
 
   void _startCounter() {
-    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
       _getCurrentPosition();
     });
     stopwatch.start();
@@ -98,11 +101,19 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       stopwatch.reset();
     });
+    print(positionsRace);
+    print(timesRace);
+    positionsRace.clear();
+    timesRace.clear();
   }
 
   void _getCurrentPosition() async {
     Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
+
+    positionsRace.add(newPosition);
+    timesRace.add(_printDuration(stopwatch.elapsed));
+
     setState(() {
       position = newPosition;
       speed = newPosition.speed * 3.6;
@@ -118,6 +129,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return "${twoDigits(duration.inHours)}:$minutes:$seconds:$miliseconds";
   }
 
+  String _printSpeed(speed) {
+    speed = speed.toStringAsFixed(1);
+    return speed.toString();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,92 +142,86 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Tempo',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            Text(
-              _printDuration(stopwatch.elapsed),
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            // Text(
-            //   "Voltas",
-            //   style: Theme.of(context).textTheme.headlineSmall,
-            // ),
-            // Text(
-            //   laps.toString(),
-            //   style: Theme.of(context).textTheme.headlineMedium,
-            // ),
-
-            Text(
-              "Posição",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            Text(
-              position != null ? position.toString() : "Calculando",
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            Text(
-              "Velocidade",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            Text(
-              speed.toString(),
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            Container(
-              child: RadialGauge(
-                track: RadialTrack(
-                    color: Colors.grey,
-                    start: 0,
-                    end: 80,
-                    trackStyle: TrackStyle(
-                        showLastLabel: false,
-                        secondaryRulerColor: Colors.grey,
-                        secondaryRulerPerInterval: 2)),
-                needlePointer: [
-                  NeedlePointer(
-                    value: speed != null ? speed! : 0,
-                    color: Colors.red,
-                    tailColor: Colors.black,
-                    tailRadius: 0,
-                    needleStyle: NeedleStyle.gaugeNeedle,
-                    needleWidth: 8,
-                  ),
-                ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Tempo',
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  margin: EdgeInsets.all(12),
-                  child: ElevatedButton(
-                      onPressed: _resetCounter,
-                      child: Text('Reset', style: TextStyle(fontSize: 24))),
+              Text(
+                _printDuration(stopwatch.elapsed),
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              //-23,5516 -> 4 casas decimais / 1.10^-4 casa =  10 metros
+              Text(
+                "Posição",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              Text(
+                position != null ? position.toString() : "Calculando",
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              Text(
+                "Velocidade (km/s)",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              Text(
+                position != null ? _printSpeed(speed) : "Calculando",
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              Container(
+                child: RadialGauge(
+                  track: RadialTrack(
+                      color: Colors.grey,
+                      start: 0,
+                      end: 80,
+                      trackStyle: TrackStyle(
+                          showLastLabel: false,
+                          secondaryRulerColor: Colors.grey,
+                          secondaryRulerPerInterval: 2)),
+                  needlePointer: [
+                    NeedlePointer(
+                      value: speed != null ? speed! : 0,
+                      color: Colors.red,
+                      tailColor: Colors.black,
+                      tailRadius: 0,
+                      needleStyle: NeedleStyle.gaugeNeedle,
+                      needleWidth: 8,
+                    ),
+                  ],
                 ),
-                Container(
-                  margin: EdgeInsets.all(12),
-                  child: ElevatedButton(
-                      onPressed: _stopCounter,
-                      child: Text('Stop', style: TextStyle(fontSize: 24))),
-                ),
-                Container(
-                  margin: EdgeInsets.all(12),
-                  child: ElevatedButton(
-                    onPressed: _startCounter,
-                    child: Text(
-                      'Start',
-                      style: TextStyle(fontSize: 24),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    margin: EdgeInsets.all(12),
+                    child: ElevatedButton(
+                        onPressed: _resetCounter,
+                        child: Text('Reset', style: TextStyle(fontSize: 24))),
+                  ),
+                  Container(
+                    margin: EdgeInsets.all(12),
+                    child: ElevatedButton(
+                        onPressed: _stopCounter,
+                        child: Text('Stop', style: TextStyle(fontSize: 24))),
+                  ),
+                  Container(
+                    margin: EdgeInsets.all(12),
+                    child: ElevatedButton(
+                      onPressed: _startCounter,
+                      child: Text(
+                        'Start',
+                        style: TextStyle(fontSize: 24),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            )
-          ],
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
