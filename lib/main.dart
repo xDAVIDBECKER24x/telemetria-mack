@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:telemetria_mack/history.dart';
+
+import 'file_storage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -99,6 +103,11 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       stopwatch.reset();
     });
+
+    // _writeFile(timeRace.join(""));
+    FileStorage.writeCounter(
+        "Speed => "+ speedRace.toString() + "\nPosition => "+timeRace.toString(), "test.txt");
+
     print("Register Race Length :" + positionsRace.length.toString());
     print(positionsRace);
     print(speedRace);
@@ -111,10 +120,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void _startCurrentPosition() async {
     Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-
+    speed = 0;
+    position  = newPosition;
     setState(() {
-      position = newPosition;
-      speed = 0;
+      position;
+      speed;
     });
   }
 
@@ -135,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
       stopwatch;
     });
   }
+
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
