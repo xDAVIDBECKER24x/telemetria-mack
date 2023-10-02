@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:telemetria_mack/history.dart';
-
 import 'file_storage.dart';
 
 void main() {
@@ -15,34 +12,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,12 +50,44 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _startCurrentPosition();
+    _determinePosition();
+    _timer = Timer.periodic(const Duration(milliseconds: 400), (timer) {
+      _setCurrentPosition();
+    });
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
 
   void _startCounter() {
+    _timer.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 400), (timer) {
-      _getCurrentPosition();
+      _saveCurrentPosition();
     });
     stopwatch.start();
   }
@@ -104,31 +105,36 @@ class _MyHomePageState extends State<MyHomePage> {
       stopwatch.reset();
     });
 
-    // _writeFile(timeRace.join(""));
     FileStorage.writeCounter(
-        "Speed => "+ speedRace.toString() + "\nPosition => "+timeRace.toString(), "test.txt");
+        "Speed => " +
+            speedRace.toString() +
+            "\nPosition => " +
+            timeRace.toString(),
+        "test.txt");
 
-    print("Register Race Length :" + positionsRace.length.toString());
-    print(positionsRace);
-    print(speedRace);
-    print(timeRace);
+    print("Register Race Length :" + timeRace.length.toString());
+    // print(positionsRace);
+    // print(speedRace);
+    // print(timeRace);
     positionsRace.clear();
     speedRace.clear();
     timeRace.clear();
   }
 
-  void _startCurrentPosition() async {
+  void _setCurrentPosition() async {
     Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    speed = 0;
-    position  = newPosition;
+
+    speed = newPosition.speed * 3.6;
+    position = newPosition;
+
     setState(() {
       position;
       speed;
     });
   }
 
-  void _getCurrentPosition() async {
+  void _saveCurrentPosition() async {
     Position newPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
@@ -146,7 +152,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     String minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -161,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   String _formatCordenate(cordenate) {
-    cordenate = cordenate.toStringAsFixed(5);
+    cordenate = cordenate.toStringAsFixed(6);
     return cordenate;
   }
 
