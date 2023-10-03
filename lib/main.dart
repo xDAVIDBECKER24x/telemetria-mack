@@ -113,9 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
         "test.txt");
 
     print("Register Race Length :" + timeRace.length.toString());
-    // print(positionsRace);
-    // print(speedRace);
-    // print(timeRace);
+
     positionsRace.clear();
     speedRace.clear();
     timeRace.clear();

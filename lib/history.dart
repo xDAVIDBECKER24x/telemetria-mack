@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:geolocator_platform_interface/src/models/position.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'file_storage.dart';
+
 class History extends StatefulWidget {
   const History({Key? key}) : super(key: key);
 
@@ -11,30 +13,19 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
+
   String text = "Nothing";
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      text;
-    });
-  }
+    _printHistory();
 
-  Future<String> _readFile() async {
-    String text = "";
-    try {
-      final Directory directory = await getApplicationDocumentsDirectory();
-      final File file = File('${directory.path}/test.txt');
-      text = await file.readAsString();
-    } catch (e) {
-      print("Couldn't read file");
-    }
-    return text;
   }
 
   Future<void> _printHistory() async {
-    text = await _readFile();
+    var content = await FileStorage.readCounter("test.txt");
+    text = content.toString();
     setState(() {
       text;
     });
@@ -50,12 +41,24 @@ class _HistoryState extends State<History> {
             Navigator.pop(context);
           },
           icon: Icon(Icons.arrow_back),
-        ),
+        ),actions: [
+        Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                _printHistory();
+              },
+              child: Icon(
+                Icons.restart_alt,
+                size: 26.0,
+              ),
+            )),
+      ]
       ),
       body: Center(
         child: Column(
           children: [
-            ElevatedButton(onPressed: _printHistory, child: Text("Print History")),
+            // ElevatedButton(onPressed: _printHistory, child: Text("Print History")),
             Text(text)
           ],
         ),

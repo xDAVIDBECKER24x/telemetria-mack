@@ -33,14 +33,24 @@ class FileStorage {
     return directory;
   }
 
-  static Future<File> writeCounter(String bytes,String name) async {
+  static Future<File> writeCounter(String bytes, String name) async {
     final path = await _localPath;
     // Create a file for the path of
     // device and file name with extension
-    File file= File('$path/$name');
-    print("Save file");
-
+    File file = File('$path/$name');
     // Write the data in the file you have created
     return file.writeAsString(bytes);
+  }
+
+  static Future<Object> readCounter(String name) async {
+    try {
+      final path = await _localPath;
+      File file = File('$path/$name');
+      String content = await file.readAsString();
+      return content;
+    } catch (e) {
+      // If encountering an error, return 0
+      return "Error reading file :(";
+    }
   }
 }
