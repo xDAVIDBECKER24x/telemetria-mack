@@ -40,6 +40,7 @@ dependencies:
   geekyants_flutter_gauges: ^1.0.2
   path_provider: ^2.1.1
   permission_handler: ^11.0.0
+  fl_chart: ^0.62.0
 
 dev_dependencies:
   flutter_test:

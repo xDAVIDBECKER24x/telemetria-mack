@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 import 'package:intl/intl.dart';
 import 'package:telemetria_mack/history.dart';
+import 'package:telemetria_mack/telemetry.dart';
 import 'file_storage.dart';
 
 void main() {
@@ -44,8 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late Timer _timer;
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   List<Position> positionsRace = [];
-  List<double> speedRace = [];
-  List<String> timeRace = [];
+  List<Object> telemetry = [];
 
   @override
   void initState() {
@@ -105,18 +106,12 @@ class _MyHomePageState extends State<MyHomePage> {
       stopwatch.reset();
     });
 
-    FileStorage.writeCounter(
-        "Speed => " +
-            speedRace.toString() +
-            "\nPosition => " +
-            timeRace.toString(),
-        "test.txt");
+    FileStorage.writeCounter(telemetry.toString(), "test.txt");
 
-    print("Register Race Length :" + timeRace.length.toString());
+    print("Register Race Length :" + telemetry.length.toString());
 
     positionsRace.clear();
-    speedRace.clear();
-    timeRace.clear();
+    telemetry.clear();
   }
 
   void _setCurrentPosition() async {
@@ -140,8 +135,8 @@ class _MyHomePageState extends State<MyHomePage> {
     position = newPosition;
 
     positionsRace.add(position!);
-    speedRace.add(speed!);
-    timeRace.add(stopwatch.elapsed.toString());
+
+    telemetry.add(jsonEncode(Telemetry(speed!, stopwatch.elapsedMilliseconds.toString())));
 
     setState(() {
       position;
@@ -254,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     margin: EdgeInsets.all(12),
                     child: ElevatedButton(
                         onPressed: _resetCounter,
-                        child: Text('Reset', style: TextStyle(fontSize: 24))),
+                        child: Text('Salvar', style: TextStyle(fontSize: 24))),
                   ),
                   Container(
                     margin: EdgeInsets.all(12),
